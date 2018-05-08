@@ -1,0 +1,38 @@
+#!/bin/sh
+
+if [ "${DEBUG}" != "" ]; then
+    set -euxo pipefail
+else
+    set -euo pipefail
+fi
+
+while [ ! -f /tmp/shutdown-started ]; do
+
+    if ! flarectl dns list --zone "${CF_ZONE}" | \
+        grep " | A     | " | \
+        grep "${CF_SUBDOMAIN}.${CF_ZONE}" | \
+        awk '{ print $7 }' | \
+        grep "${NODE_IP}";
+    then
+        echo "ip ${NODE_IP} is missing from load balancer"
+
+        echo "waiting for node to become ready"
+        while ! (nc -w 5 -z $NODE_IP 80 && \
+            nc -w 5 -z $NODE_IP 443 && \
+            curl --connect-timeout 5 --max-time 5 --silent http://$NODE_IP/ > /dev/null && \
+            curl --connect-timeout 5 --max-time 5 --silent --insecure https://$NODE_IP/ > /dev/null);
+        do
+            echo "health check failed, sleeping 5s"
+            sleep 5
+        done
+
+        echo "adding ip ${NODE_IP} to ${CF_SUBDOMAIN}.${CF_ZONE}"
+        flarectl dns create --zone "${CF_ZONE}" --name "${CF_SUBDOMAIN}" --content "${NODE_IP}" --type A --ttl 120
+    else
+        echo "ip ${NODE_IP} is already part of ${CF_SUBDOMAIN}.${CF_ZONE}"
+    fi
+
+    echo "sleeping 60s"
+    sleep 60
+
+done

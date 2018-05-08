@@ -1,0 +1,26 @@
+#!/bin/sh
+
+if [ "${DEBUG}" != "" ]; then
+    set -euxo pipefail
+else
+    set -euo pipefail
+fi
+
+touch /tmp/shutdown-started
+
+if flarectl dns list --zone "${CF_ZONE}" | \
+    grep " | A     | " | \
+    grep "${CF_SUBDOMAIN}.${CF_ZONE}" | \
+    awk '{ print $7 }' | \
+    grep "${NODE_IP}";
+then
+    echo "removing ip ${NODE_IP} from ${CF_SUBDOMAIN}.${CF_ZONE}"
+    ID=$(flarectl dns list --zone "${CF_ZONE}" | grep " | A     | " | grep "${CF_SUBDOMAIN}.${CF_ZONE}" | grep "${NODE_IP}" | awk '{ print $1 }' )
+    flarectl dns delete --zone "${CF_ZONE}" --id "${ID}"
+
+    echo "waiting 120 seconds to allow dns propagation to catch up"
+    sleep 120
+    echo "done"
+else
+    echo "ip ${NODE_IP} is not part of ${CF_SUBDOMAIN}.${CF_ZONE}"
+fi

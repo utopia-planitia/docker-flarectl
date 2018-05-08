@@ -1,0 +1,33 @@
+#!/bin/sh
+
+if [ "${DEBUG}" != "" ]; then
+    set -euxo pipefail
+else
+    set -euo pipefail
+fi
+
+flarectl dns list --zone "${CF_ZONE}" | \
+    grep " | A     | " | \
+    grep "${CF_SUBDOMAIN}.${CF_ZONE}" | \
+    awk '{ print $7 }' | \
+    while read IP ; do
+
+        echo "health checking ip $IP"
+        DELETE=
+        if ! (nc -w 5 -z $IP 80 && \
+            nc -w 5 -z $IP 443 && \
+            curl --connect-timeout 5 --max-time 5 --silent http://$IP/ > /dev/null && \
+            curl --connect-timeout 5 --max-time 5 --silent --insecure https://$IP/ > /dev/null);
+        then
+            DELETE=true
+        fi
+
+        if [ "${DELETE}" != "" ]; then
+            echo deleting $IP
+            ID=$(flarectl dns list --zone "${CF_ZONE}" | grep " | A     | " | grep "${CF_SUBDOMAIN}.${CF_ZONE}" | grep "${IP}" | awk '{ print $1 }' )
+            flarectl dns delete --zone "${CF_ZONE}" --id "${ID}"
+        else
+            echo keeping $IP
+        fi
+
+    done
