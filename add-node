@@ -36,3 +36,7 @@ while [ ! -f /tmp/shutdown-started ]; do
     sleep 60
 
 done
+
+echo "waiting 120 seconds to allow dns propagation to catch up"
+sleep 120
+echo "done"
