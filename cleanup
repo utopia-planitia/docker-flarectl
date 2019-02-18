@@ -7,7 +7,7 @@ else
 fi
 
 flarectl dns list --zone "${CF_ZONE}" | \
-    grep " | A     | " | \
+    grep " | A    " | \
     grep "${CF_SUBDOMAIN}.${CF_ZONE}" | \
     awk '{ print $7 }' | \
     while read IP ; do
@@ -24,7 +24,7 @@ flarectl dns list --zone "${CF_ZONE}" | \
 
         if [ "${DELETE}" != "" ]; then
             echo deleting $IP
-            ID=$(flarectl dns list --zone "${CF_ZONE}" | grep " | A     | " | grep "${CF_SUBDOMAIN}.${CF_ZONE}" | grep "${IP}" | awk '{ print $1 }' )
+            ID=$(flarectl dns list --zone "${CF_ZONE}" | grep " | A    " | grep "${CF_SUBDOMAIN}.${CF_ZONE}" | grep "${IP}" | awk '{ print $1 }' )
             flarectl dns delete --zone "${CF_ZONE}" --id "${ID}"
         else
             echo keeping $IP

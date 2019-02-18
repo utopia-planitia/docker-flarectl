@@ -9,7 +9,7 @@ fi
 while [ ! -f /tmp/shutdown-started ]; do
 
     if ! flarectl dns list --zone "${CF_ZONE}" | \
-        grep " | A     | " | \
+        grep " | A    " | \
         grep "${CF_SUBDOMAIN}.${CF_ZONE}" | \
         awk '{ print $7 }' | \
         grep "${NODE_IP}";
