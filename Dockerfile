@@ -13,4 +13,4 @@ FROM alpine:3.9
 RUN apk add --no-cache ca-certificates curl
 COPY --from=build-env /go/bin/flarectl /bin/flarectl
 ENTRYPOINT ["/flarectl"]
-COPY cleanup add-node remove-node /bin/
+COPY rootfs /
