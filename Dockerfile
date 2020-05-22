@@ -1,11 +1,11 @@
 FROM golang:1.12.7 AS build-env
 
-# 9f66b845fa0c63078ad6b043d2cbfe7243a1c305 = v0.9.2
+# e91b3c28e0d4e6c2e41d1bb61ae30257012db4fd = v0.11.7
 RUN mkdir -p /go/src/github.com/cloudflare && \
     cd /go/src/github.com/cloudflare && \
     git clone https://github.com/cloudflare/cloudflare-go && \
     cd cloudflare-go && \
-    git checkout 9f66b845fa0c63078ad6b043d2cbfe7243a1c305 && \
+    git checkout e91b3c28e0d4e6c2e41d1bb61ae30257012db4fd && \
     go get github.com/cloudflare/cloudflare-go/cmd/flarectl
 RUN CGO_ENABLED=0 GOOS=linux go install -a -installsuffix cgo github.com/cloudflare/cloudflare-go/cmd/flarectl
 
