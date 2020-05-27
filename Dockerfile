@@ -12,5 +12,5 @@ RUN CGO_ENABLED=0 GOOS=linux go install -a -installsuffix cgo github.com/cloudfl
 FROM alpine:3.9
 RUN apk add --no-cache ca-certificates curl
 COPY --from=build-env /go/bin/flarectl /bin/flarectl
-ENTRYPOINT ["/flarectl"]
+ENTRYPOINT ["flarectl"]
 COPY rootfs /
